@@ -34,7 +34,19 @@ export interface Week {
   items: WeeklyPlanItem[];
 }
 
+export interface DailyTask {
+  id: string;
+  topicId: string;
+  subjectId: string;
+  roundId: string;
+  topicName: string;
+  subjectName: string;
+  completed: boolean;
+  dateAdded: string;
+}
+
 export interface AppState {
   rounds: Round[];
   weeklyPlan: Week[];
+  dailyTasks: DailyTask[];
 }

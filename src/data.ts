@@ -184,54 +184,58 @@ export const INITIAL_DATA: Round[] = [
         emoji: '🇬🇧',
         topics: [
           // Unit 1
-          { id: 'eng-1-1', chapter: 'Unit 1', name: 'Grammar: Past Simple & Continuous with (when, while, as, and)', status: 'not-started' },
-          { id: 'eng-1-2', chapter: 'Unit 1', name: 'Grammar: Used to (Positive, Negative, Question, Comparison)', status: 'not-started' },
-          { id: 'eng-1-3', chapter: 'Unit 1', name: 'Vocabulary: Prefixes (un, in, im, il, ir)', status: 'not-started' },
-          { id: 'eng-1-4', chapter: 'Unit 1', name: 'Vocabulary: Phrasal Verbs', status: 'not-started' },
-          { id: 'eng-1-5', chapter: 'Unit 1', name: 'Reading: Mustafa Ahmed (I will always be proud of him)', status: 'not-started' },
-          { id: 'eng-1-6', chapter: 'Unit 1', name: 'Writing: A cigarette advertisement should be illegal', status: 'not-started' },
+          { id: 'eng-1-1', chapter: 'Unit One', name: 'my toe is bleeding (verbs, nouns, adjectives)', status: 'not-started' },
+          { id: 'eng-1-2', chapter: 'Unit One', name: 'I was ice skating (past simple & continuous)', status: 'not-started' },
+          { id: 'eng-1-3', chapter: 'Unit One', name: 'Phrasal verbs: up / down / off & prefixes (un, in...)', status: 'not-started' },
+          { id: 'eng-1-4', chapter: 'Unit One', name: 'Used to and comparative adjectives', status: 'not-started' },
+          { id: 'eng-1-5', chapter: 'Unit One', name: 'Revision & Test (Unit 1)', status: 'not-started' },
+          { id: 'eng-1-6', chapter: 'Unit One', name: 'Writing: cigarette advertising / car accidents', status: 'not-started' },
           
           // Unit 2
-          { id: 'eng-2-1', chapter: 'Unit 2', name: 'Grammar: Necessity & Lack of Necessity', status: 'not-started' },
-          { id: 'eng-2-2', chapter: 'Unit 2', name: 'Grammar: Giving Advice & Suggestions', status: 'not-started' },
-          { id: 'eng-2-3', chapter: 'Unit 2', name: 'Grammar: Offers & Polite Requests', status: 'not-started' },
-          { id: 'eng-2-4', chapter: 'Unit 2', name: 'Grammar: Expectation (should/shouldn\'t)', status: 'not-started' },
-          { id: 'eng-2-5', chapter: 'Unit 2', name: 'Grammar: Causative Verbs (have, get, make)', status: 'not-started' },
-          { id: 'eng-2-6', chapter: 'Unit 2', name: 'Reading: Security Technology (Radar Guns)', status: 'not-started' },
-          { id: 'eng-2-7', chapter: 'Unit 2', name: 'Writing: A letter of application for a job', status: 'not-started' },
+          { id: 'eng-2-1', chapter: 'Unit Two', name: 'Law and order (used to revision)', status: 'not-started' },
+          { id: 'eng-2-2', chapter: 'Unit Two', name: 'Police officers duties (Must, Have to, need to)', status: 'not-started' },
+          { id: 'eng-2-3', chapter: 'Unit Two', name: 'Airport Security (polite requests, suggestions, offers)', status: 'not-started' },
+          { id: 'eng-2-4', chapter: 'Unit Two', name: 'Military Jobs (should / shouldn\'t)', status: 'not-started' },
+          { id: 'eng-2-5', chapter: 'Unit Two', name: 'A robbery (Have, get, make informal passive)', status: 'not-started' },
+          { id: 'eng-2-6', chapter: 'Unit Two', name: 'Road safety & Security technology', status: 'not-started' },
+          { id: 'eng-2-7', chapter: 'Unit Two', name: 'Writing: Road safety / Advice on interview', status: 'not-started' },
           
           // Unit 3
-          { id: 'eng-3-1', chapter: 'Unit 3', name: 'Grammar: Conditionals (Zero, First, Second, Third)', status: 'not-started' },
-          { id: 'eng-3-2', chapter: 'Unit 3', name: 'Grammar: Regret (If only / I wish)', status: 'not-started' },
-          { id: 'eng-3-3', chapter: 'Unit 3', name: 'Grammar: Reported Speech (Questions)', status: 'not-started' },
-          { id: 'eng-3-4', chapter: 'Unit 3', name: 'Reading: Conference Interpreter (Samira Al-Mahmoud)', status: 'not-started' },
-          { id: 'eng-3-5', chapter: 'Unit 3', name: 'Writing: The advantages of studying English in Britain', status: 'not-started' },
+          { id: 'eng-3-1', chapter: 'Unit Three', name: 'Tourist industry (Phrases for writing definitions)', status: 'not-started' },
+          { id: 'eng-3-2', chapter: 'Unit Three', name: 'Conditionals (Zero, First, Second, Third)', status: 'not-started' },
+          { id: 'eng-3-3', chapter: 'Unit Three', name: 'Regret (I wish and If only)', status: 'not-started' },
+          { id: 'eng-3-4', chapter: 'Unit Three', name: 'Summer jobs & Focus on careers', status: 'not-started' },
+          { id: 'eng-3-5', chapter: 'Unit Three', name: 'Writing: advantages of studying English / ask friend', status: 'not-started' },
           
+          // Unit 4
+          { id: 'eng-4-1', chapter: 'Unit Four', name: 'Rashid & Rana Designs (past simple & continuous)', status: 'not-started' },
+          { id: 'eng-4-2', chapter: 'Unit Four', name: 'Used to (People didn\'t use to work out at home)', status: 'not-started' },
+          { id: 'eng-4-3', chapter: 'Unit Four', name: 'Writing: a company you have recently set up', status: 'not-started' },
+
           // Unit 5
-          { id: 'eng-5-1', chapter: 'Unit 5', name: 'Grammar: Present Perfect Simple (just, already, yet, ever, never)', status: 'not-started' },
-          { id: 'eng-5-2', chapter: 'Unit 5', name: 'Grammar: Present Perfect Continuous (since/for/how long)', status: 'not-started' },
-          { id: 'eng-5-3', chapter: 'Unit 5', name: 'Grammar: Past Simple vs Present Perfect', status: 'not-started' },
-          { id: 'eng-5-4', chapter: 'Unit 5', name: 'Grammar: Past Perfect', status: 'not-started' },
-          { id: 'eng-5-5', chapter: 'Unit 5', name: 'Grammar: Relative Clauses (Defining & Non-defining)', status: 'not-started' },
-          { id: 'eng-5-6', chapter: 'Unit 5', name: 'Reading: Why are holidays so important?', status: 'not-started' },
-          { id: 'eng-5-7', chapter: 'Unit 5', name: 'Writing: A wonderful holiday I had', status: 'not-started' },
+          { id: 'eng-5-1', chapter: 'Unit Five', name: 'Sightseeing (Compound nouns)', status: 'not-started' },
+          { id: 'eng-5-2', chapter: 'Unit Five', name: 'Present perfect simple & continuous (since/for)', status: 'not-started' },
+          { id: 'eng-5-3', chapter: 'Unit Five', name: 'Relative clauses (Defining and non-defining)', status: 'not-started' },
+          { id: 'eng-5-4', chapter: 'Unit Five', name: 'Writing: a brief description of the holiday / advice', status: 'not-started' },
           
           // Unit 6
-          { id: 'eng-6-1', chapter: 'Unit 6', name: 'Grammar: Passive Voice (Present, Past, Future, Continuous, Perfect)', status: 'not-started' },
-          { id: 'eng-6-2', chapter: 'Unit 6', name: 'Reading: Meet a banker', status: 'not-started' },
-          { id: 'eng-6-3', chapter: 'Unit 6', name: 'Writing: A letter of complaint to a bank', status: 'not-started' },
+          { id: 'eng-6-1', chapter: 'Unit Six', name: 'Passive voice (Present, Past, Future, Continuous, Perfect)', status: 'not-started' },
+          { id: 'eng-6-2', chapter: 'Unit Six', name: 'Meet a banker & car loan (Conditionals)', status: 'not-started' },
+          { id: 'eng-6-3', chapter: 'Unit Six', name: 'Writing: A complaint to a Bank', status: 'not-started' },
           
           // Unit 7
-          { id: 'eng-7-1', chapter: 'Unit 7', name: 'Grammar: Future Forms (will, going to, present continuous, present simple)', status: 'not-started' },
-          { id: 'eng-7-2', chapter: 'Unit 7', name: 'Grammar: Future in the Past', status: 'not-started' },
-          { id: 'eng-7-3', chapter: 'Unit 7', name: 'Reading: Using the library', status: 'not-started' },
-          { id: 'eng-7-4', chapter: 'Unit 7', name: 'Writing: Studying while you work', status: 'not-started' },
+          { id: 'eng-7-1', chapter: 'Unit Seven', name: 'Future forms & Future in the past', status: 'not-started' },
+          { id: 'eng-7-2', chapter: 'Unit Seven', name: 'Learning experiences & Volunteers', status: 'not-started' },
+          { id: 'eng-7-3', chapter: 'Unit Seven', name: 'Writing: studying while you are working', status: 'not-started' },
+
+          // Unit 8
+          { id: 'eng-8-1', chapter: 'Unit Eight', name: 'Natural resource (Prefixes/Suffixes) & Recycling waste', status: 'not-started' },
+          { id: 'eng-8-2', chapter: 'Unit Eight', name: 'Renewable resource & Careers connected with environment', status: 'not-started' },
+          { id: 'eng-8-3', chapter: 'Unit Eight', name: 'Writing: way people can help to improve environment', status: 'not-started' },
           
           // Literature
-          { id: 'eng-lit-1', chapter: 'Literature', name: 'The Swing (Mohammed Khudair) - Part 1: Life & Works', status: 'not-started' },
-          { id: 'eng-lit-2', chapter: 'Literature', name: 'The Swing (Mohammed Khudair) - Part 2: Analysis & Questions', status: 'not-started' },
-          { id: 'eng-lit-3', chapter: 'Literature', name: 'The Canary (Katherine Mansfield) - Part 1: Life & Works', status: 'not-started' },
-          { id: 'eng-lit-4', chapter: 'Literature', name: 'The Canary (Katherine Mansfield) - Part 2: Analysis & Questions', status: 'not-started' },
+          { id: 'eng-lit-1', chapter: 'Literature', name: 'Pride and Prejudice (Sections 1-6)', status: 'not-started' },
+          { id: 'eng-lit-2', chapter: 'Literature', name: 'As You Like It (Sections 1-6)', status: 'not-started' },
         ],
       },
       {

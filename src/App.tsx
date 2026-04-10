@@ -22,7 +22,7 @@ import {
   Square
 } from 'lucide-react';
 import { INITIAL_DATA, MOTIVATIONAL_MESSAGES } from './data';
-import { Round, TopicStatus, Subject, Topic, Week } from './types';
+import { Round, TopicStatus, Subject, Topic, Week, DailyTask } from './types';
 
 export default function App() {
   const [rounds, setRounds] = useState<Round[]>(() => {
@@ -57,7 +57,13 @@ export default function App() {
       return INITIAL_DATA;
     }
   });
-  const [activeTab, setActiveTab] = useState<'first' | 'plan'>('first');
+
+  const [dailyTasks, setDailyTasks] = useState<DailyTask[]>(() => {
+    const saved = localStorage.getItem('study_tracker_daily_tasks');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [activeTab, setActiveTab] = useState<'first' | 'plan' | 'daily'>('first');
   const [expandedSubjects, setExpandedSubjects] = useState<Record<string, boolean>>({});
   const [expandedChapters, setExpandedChapters] = useState<Record<string, boolean>>({});
   const [motivation, setMotivation] = useState<string | null>(null);
@@ -67,10 +73,16 @@ export default function App() {
     localStorage.setItem('study_tracker_data', JSON.stringify(rounds));
   }, [rounds]);
 
+  useEffect(() => {
+    localStorage.setItem('study_tracker_daily_tasks', JSON.stringify(dailyTasks));
+  }, [dailyTasks]);
+
   const resetProgress = () => {
     if (window.confirm('هل أنت متأكد من تصفير كل التقدم؟ لا يمكن التراجع عن هذه الخطوة.')) {
       setRounds(INITIAL_DATA);
+      setDailyTasks([]);
       localStorage.removeItem('study_tracker_data');
+      localStorage.removeItem('study_tracker_daily_tasks');
     }
   };
 
@@ -157,6 +169,53 @@ export default function App() {
     const randomMsg = MOTIVATIONAL_MESSAGES[Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length)];
     setMotivation(randomMsg);
     setTimeout(() => setMotivation(null), 2000);
+  };
+
+  const addToDailyTasks = (roundId: string, subjectId: string, topicId: string) => {
+    const round = rounds.find(r => r.id === roundId);
+    const subject = round?.subjects.find(s => s.id === subjectId);
+    const topic = subject?.topics.find(t => t.id === topicId);
+
+    if (!topic || !subject) return;
+
+    // Check if already exists
+    if (dailyTasks.find(t => t.topicId === topicId)) {
+      alert('هذا الموضوع موجود بالفعل في مهامك اليومية');
+      return;
+    }
+
+    const newTask: DailyTask = {
+      id: Math.random().toString(36).substr(2, 9),
+      topicId,
+      subjectId,
+      roundId,
+      topicName: topic.name,
+      subjectName: subject.name,
+      completed: false,
+      dateAdded: new Date().toISOString()
+    };
+
+    setDailyTasks(prev => [newTask, ...prev]);
+    setActiveTab('daily');
+  };
+
+  const toggleDailyTask = (taskId: string) => {
+    setDailyTasks(prev => prev.map(task => {
+      if (task.id !== taskId) return task;
+      
+      const newCompleted = !task.completed;
+      if (newCompleted) {
+        showMotivation();
+        // Also update the main topic status to completed
+        updateTopicStatus(task.roundId, task.subjectId, task.topicId, 'completed');
+      }
+      
+      return { ...task, completed: newCompleted };
+    }));
+  };
+
+  const removeDailyTask = (taskId: string) => {
+    setDailyTasks(prev => prev.filter(t => t.id !== taskId));
   };
 
   const getStatusColor = (status: TopicStatus) => {
@@ -285,6 +344,17 @@ export default function App() {
                 الدور الأول
               </button>
               <button
+                onClick={() => setActiveTab('daily')}
+                className={`flex-1 py-2.5 rounded-lg font-bold transition-all text-sm flex items-center justify-center gap-2 ${
+                  activeTab === 'daily' 
+                    ? 'bg-emerald-600 text-white shadow-md' 
+                    : 'text-white/60 hover:text-white'
+                }`}
+              >
+                <CheckSquare className="w-4 h-4" />
+                مهامي اليومية
+              </button>
+              <button
                 onClick={() => setActiveTab('plan')}
                 className={`flex-1 py-2.5 rounded-lg font-bold transition-all text-sm flex items-center justify-center gap-2 ${
                   activeTab === 'plan' 
@@ -293,7 +363,7 @@ export default function App() {
                 }`}
               >
                 <ListTodo className="w-4 h-4" />
-                الخطة الأسبوعية
+                الخطة
               </button>
             </div>
           </div>
@@ -301,7 +371,66 @@ export default function App() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 mt-6 space-y-6">
-        {activeTab === 'plan' ? (
+        {activeTab === 'daily' ? (
+          /* Daily Tasks Tab */
+          <div className="space-y-6">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+              <h2 className="text-xl font-extrabold text-navy mb-2 flex items-center gap-2">
+                <CheckSquare className="text-emerald-500" />
+                مهامي لليوم
+              </h2>
+              <p className="text-slate-500 text-sm font-medium">
+                أضف مواضيع من الدور الأول أو الخطة لتركز عليها اليوم.
+              </p>
+            </div>
+
+            {dailyTasks.length === 0 ? (
+              <div className="bg-slate-100 border border-slate-200 p-12 rounded-3xl text-center">
+                <ListTodo className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-slate-500 mb-2">لا توجد مهام مضافة</h3>
+                <p className="text-slate-400 text-sm">اذهب إلى الدور الأول أو الخطة وأضف مواضيعك لليوم.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {dailyTasks.map((task) => (
+                  <div 
+                    key={task.id}
+                    className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                      task.completed 
+                        ? 'bg-emerald-50 border-emerald-100 opacity-75' 
+                        : 'bg-white border-slate-200 hover:border-emerald-300'
+                    }`}
+                  >
+                    <button 
+                      onClick={() => toggleDailyTask(task.id)}
+                      className={`transition-colors ${task.completed ? 'text-emerald-500' : 'text-slate-300 hover:text-emerald-500'}`}
+                    >
+                      {task.completed ? <CheckCircle2 className="w-7 h-7" /> : <Square className="w-7 h-7" />}
+                    </button>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500">
+                          {task.subjectName}
+                        </span>
+                      </div>
+                      <p className={`font-bold text-sm ${task.completed ? 'text-emerald-900 line-through' : 'text-navy'}`}>
+                        {task.topicName}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => removeDailyTask(task.id)}
+                      className="text-slate-300 hover:text-rose-500 transition-colors p-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : activeTab === 'plan' ? (
           /* Weekly Plan Tab */
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -365,6 +494,13 @@ export default function App() {
                               {topic.chapter}
                             </p>
                           </div>
+                          <button
+                            onClick={() => addToDailyTasks(item.roundId, item.subjectId, item.topicId)}
+                            className="p-2 text-slate-300 hover:text-emerald-500 transition-colors"
+                            title="إضافة للمهام اليومية"
+                          >
+                            <CheckSquare className="w-5 h-5" />
+                          </button>
                         </div>
                       );
                     })}
@@ -552,21 +688,30 @@ export default function App() {
                                                   {topic.name}
                                                 </span>
                                               </div>
-                                              <button
-                                                onClick={() => cycleStatus(subject.id, topic.id)}
-                                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm flex items-center gap-2 min-w-[115px] justify-center border ${
-                                                  topic.status === 'completed' 
-                                                    ? 'bg-emerald-500 text-white border-emerald-600' 
-                                                    : topic.status === 'in-progress'
-                                                    ? 'bg-amber-400 text-white border-amber-500'
-                                                    : 'bg-white text-slate-400 border-slate-200 hover:border-rose-300 hover:text-rose-500'
-                                                }`}
-                                              >
-                                                {topic.status === 'completed' && <CheckCircle2 className="w-3 h-3" />}
-                                                {topic.status === 'in-progress' && <AlertCircle className="w-3 h-3" />}
-                                                {topic.status === 'not-started' && <Square className="w-3 h-3" />}
-                                                {getStatusLabel(topic.status)}
-                                              </button>
+                                              <div className="flex items-center gap-2">
+                                                <button
+                                                  onClick={() => addToDailyTasks(activeRound.id, subject.id, topic.id)}
+                                                  className="p-2 text-slate-300 hover:text-emerald-500 transition-colors"
+                                                  title="إضافة للمهام اليومية"
+                                                >
+                                                  <CheckSquare className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                  onClick={() => cycleStatus(subject.id, topic.id)}
+                                                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm flex items-center gap-2 min-w-[115px] justify-center border ${
+                                                    topic.status === 'completed' 
+                                                      ? 'bg-emerald-500 text-white border-emerald-600' 
+                                                      : topic.status === 'in-progress'
+                                                      ? 'bg-amber-400 text-white border-amber-500'
+                                                      : 'bg-white text-slate-400 border-slate-200 hover:border-rose-300 hover:text-rose-500'
+                                                  }`}
+                                                >
+                                                  {topic.status === 'completed' && <CheckCircle2 className="w-3 h-3" />}
+                                                  {topic.status === 'in-progress' && <AlertCircle className="w-3 h-3" />}
+                                                  {topic.status === 'not-started' && <Square className="w-3 h-3" />}
+                                                  {getStatusLabel(topic.status)}
+                                                </button>
+                                              </div>
                                             </div>
                                           ))}
                                         </div>
