@@ -117,21 +117,6 @@ export const INITIAL_DATA: Round[] = [
           { id: 'bio-3-39', chapter: 'الفصل الثالث: التكاثر', name: 'رسم: أحداث الدورة المبيضية', status: 'not-started' },
           { id: 'bio-3-40', chapter: 'الفصل الثالث: التكاثر', name: 'أسئلة الفصل الثالث', status: 'not-started' },
 
-          // الفصل الرابع: التكوين الجنيني
-          { id: 'bio-4-1', chapter: 'الفصل الرابع: التكوين الجنيني', name: 'مقدمة ومفهوم النمو', status: 'not-started' },
-          { id: 'bio-4-2', chapter: 'الفصل الرابع: التكوين الجنيني', name: 'مفهوم التمايز الخلوي', status: 'not-started' },
-          { id: 'bio-4-3', chapter: 'الفصل الرابع: التكوين الجنيني', name: 'مستويات التعضي في تعقيد الحيوان', status: 'not-started' },
-          { id: 'bio-4-4', chapter: 'الفصل الرابع: التكوين الجنيني', name: 'مفهوم التكوين الجنيني', status: 'not-started' },
-          { id: 'bio-4-5', chapter: 'الفصل الرابع: التكوين الجنيني', name: 'نظريات التكوين الجنيني', status: 'not-started' },
-          { id: 'bio-4-6', chapter: 'الفصل الرابع: التكوين الجنيني', name: 'مفاهيم التكوين الجنيني الأساسية', status: 'not-started' },
-          { id: 'bio-4-7', chapter: 'الفصل الرابع: التكوين الجنيني', name: 'التشوهات الخلقية في الإنسان', status: 'not-started' },
-          { id: 'bio-4-8', chapter: 'الفصل الرابع: التكوين الجنيني', name: 'التوائم', status: 'not-started' },
-          { id: 'bio-4-9', chapter: 'الفصل الرابع: التكوين الجنيني', name: 'المباعدة بين الولادات', status: 'not-started' },
-          { id: 'bio-4-10', chapter: 'الفصل الرابع: التكوين الجنيني', name: 'الخلايا الجذعية', status: 'not-started' },
-          { id: 'bio-4-11', chapter: 'الفصل الرابع: التكوين الجنيني', name: 'الاستنساخ في الحيوان', status: 'not-started' },
-          { id: 'bio-4-12', chapter: 'الفصل الرابع: التكوين الجنيني', name: 'علاج العقم', status: 'not-started' },
-          { id: 'bio-4-13', chapter: 'الفصل الرابع: التكوين الجنيني', name: 'أسئلة الفصل الرابع', status: 'not-started' },
-
           // الفصل الخامس: الوراثة
           { id: 'bio-5-1', chapter: 'الفصل الخامس: الوراثة', name: 'مقدمة', status: 'not-started' },
           { id: 'bio-5-2', chapter: 'الفصل الخامس: الوراثة', name: 'الوراثة ما قبل مندل', status: 'not-started' },
@@ -223,11 +208,6 @@ export const INITIAL_DATA: Round[] = [
           { id: 'eng-6-2', chapter: 'Unit Six', name: 'Meet a banker & car loan (Conditionals)', status: 'not-started' },
           { id: 'eng-6-3', chapter: 'Unit Six', name: 'Writing: A complaint to a Bank', status: 'not-started' },
           
-          // Unit 7
-          { id: 'eng-7-1', chapter: 'Unit Seven', name: 'Future forms & Future in the past', status: 'not-started' },
-          { id: 'eng-7-2', chapter: 'Unit Seven', name: 'Learning experiences & Volunteers', status: 'not-started' },
-          { id: 'eng-7-3', chapter: 'Unit Seven', name: 'Writing: studying while you are working', status: 'not-started' },
-
           // Unit 8
           { id: 'eng-8-1', chapter: 'Unit Eight', name: 'Natural resource (Prefixes/Suffixes) & Recycling waste', status: 'not-started' },
           { id: 'eng-8-2', chapter: 'Unit Eight', name: 'Renewable resource & Careers connected with environment', status: 'not-started' },
@@ -269,12 +249,6 @@ export const INITIAL_DATA: Round[] = [
           { id: 'isl-4-3', chapter: 'الوحدة الرابعة', name: 'في الجهاد وكرامة المجاهد', status: 'not-started' },
           { id: 'isl-4-4', chapter: 'الوحدة الرابعة', name: 'الوظائف الاقتصادية', status: 'not-started' },
           { id: 'isl-4-5', chapter: 'الوحدة الرابعة', name: 'التكبر', status: 'not-started' },
-          
-          { id: 'isl-5-1', chapter: 'الوحدة الخامسة', name: 'سورة الأنبياء (معاني - شرح الآيات)', status: 'not-started' },
-          { id: 'isl-5-2', chapter: 'الوحدة الخامسة', name: 'نبأ الفاسق (القصة - أهم ما ترشد إليه)', status: 'not-started' },
-          { id: 'isl-5-3', chapter: 'الوحدة الخامسة', name: 'حسن الخلق', status: 'not-started' },
-          { id: 'isl-5-4', chapter: 'الوحدة الخامسة', name: 'التسامح والتعايش السلمي', status: 'not-started' },
-          { id: 'isl-5-5', chapter: 'الوحدة الخامسة', name: 'القناعة', status: 'not-started' },
         ],
       },
       {
@@ -348,12 +322,6 @@ export const INITIAL_DATA: Round[] = [
           { id: 'phys-8-3', chapter: 'الفصل الثامن: الأطياف الذرية والليزر', name: 'الأشعة السينية وتأثير كومبتن', status: 'not-started' },
           { id: 'phys-8-4', chapter: 'الفصل الثامن: الأطياف الذرية والليزر', name: 'الليزر والميزر (آلية العمل، الخصائص، المنظومات)', status: 'not-started' },
           { id: 'phys-8-5', chapter: 'الفصل الثامن: الأطياف الذرية والليزر', name: 'أنواع وتطبيقات الليزر وأسئلة ومسائل الفصل الثامن', status: 'not-started' },
-          
-          // الفصل التاسع: الفيزياء النووية
-          { id: 'phys-9-1', chapter: 'الفصل التاسع: الفيزياء النووية', name: 'مقدمة وتركيب النواة وطاقة الربط النووية', status: 'not-started' },
-          { id: 'phys-9-2', chapter: 'الفصل التاسع: الفيزياء النووية', name: 'الاحلال الاشعاعي (ألفا، بيتا، كاما)', status: 'not-started' },
-          { id: 'phys-9-3', chapter: 'الفصل التاسع: الفيزياء النووية', name: 'التفاعلات النووية والانشطار والاندماج', status: 'not-started' },
-          { id: 'phys-9-4', chapter: 'الفصل التاسع: الفيزياء النووية', name: 'مخاطر وفوائد الاشعاع وأسئلة ومسائل الفصل التاسع', status: 'not-started' },
         ],
       },
     ],
@@ -413,7 +381,6 @@ export const WEEKLY_PLAN: Week[] = [
     items: [
       { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-6' },
       { roundId: 'first', subjectId: 'eng', topicId: 'eng-2-1' },
-      { roundId: 'first', subjectId: 'isl', topicId: 'isl-5-1' },
     ],
   },
   {
@@ -475,7 +442,6 @@ export const WEEKLY_PLAN: Week[] = [
     title: 'الأسبوع الثالث عشر: قبل الأخير',
     items: [
       { roundId: 'first', subjectId: 'bio', topicId: 'bio-3-1' },
-      { roundId: 'first', subjectId: 'eng', topicId: 'eng-7-1' },
       { roundId: 'first', subjectId: 'phys', topicId: 'phys-3-1' },
     ],
   },
@@ -483,7 +449,6 @@ export const WEEKLY_PLAN: Week[] = [
     id: 14,
     title: 'الأسبوع الرابع عشر: أسبوع المراجعة النهائية',
     items: [
-      { roundId: 'first', subjectId: 'isl', topicId: 'isl-5-1' },
       { roundId: 'first', subjectId: 'eng', topicId: 'eng-lit-2' },
     ],
   },
