@@ -5,6 +5,7 @@ export interface Topic {
   name: string;
   chapter: string;
   status: TopicStatus;
+  studyTime?: number; // in seconds
 }
 
 export interface Subject {
@@ -49,4 +50,10 @@ export interface AppState {
   rounds: Round[];
   weeklyPlan: Week[];
   dailyTasks: DailyTask[];
+  activeTimer: {
+    topicId: string;
+    subjectId: string;
+    roundId: string;
+    startTime: number; // timestamp
+  } | null;
 }

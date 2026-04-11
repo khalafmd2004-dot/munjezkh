@@ -19,7 +19,14 @@ import {
   Sparkles,
   ListTodo,
   CheckSquare,
-  Square
+  Square,
+  Filter,
+  ArrowUpDown,
+  X,
+  Play,
+  Pause,
+  Timer,
+  History
 } from 'lucide-react';
 import { INITIAL_DATA, MOTIVATIONAL_MESSAGES } from './data';
 import { Round, TopicStatus, Subject, Topic, Week, DailyTask } from './types';
@@ -68,6 +75,18 @@ export default function App() {
   const [expandedChapters, setExpandedChapters] = useState<Record<string, boolean>>({});
   const [motivation, setMotivation] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<TopicStatus | 'all'>('all');
+  const [sortBy, setSortBy] = useState<'name' | 'progress' | 'chapter' | 'default'>('default');
+  const [activeTimer, setActiveTimer] = useState<{
+    topicId: string;
+    subjectId: string;
+    roundId: string;
+    startTime: number;
+  } | null>(() => {
+    const saved = localStorage.getItem('study_tracker_active_timer');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
     localStorage.setItem('study_tracker_data', JSON.stringify(rounds));
@@ -76,6 +95,22 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('study_tracker_daily_tasks', JSON.stringify(dailyTasks));
   }, [dailyTasks]);
+
+  useEffect(() => {
+    localStorage.setItem('study_tracker_active_timer', JSON.stringify(activeTimer));
+  }, [activeTimer]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (activeTimer) {
+      interval = setInterval(() => {
+        setElapsedSeconds(Math.floor((Date.now() - activeTimer.startTime) / 1000));
+      }, 1000);
+    } else {
+      setElapsedSeconds(0);
+    }
+    return () => clearInterval(interval);
+  }, [activeTimer]);
 
   const resetProgress = () => {
     if (window.confirm('هل أنت متأكد من تصفير كل التقدم؟ لا يمكن التراجع عن هذه الخطوة.')) {
@@ -226,19 +261,88 @@ export default function App() {
     }
   };
 
+  const formatTime = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hrs > 0) {
+      return `${hrs}س ${mins}د`;
+    }
+    if (mins > 0) {
+      return `${mins}د ${secs}ث`;
+    }
+    return `${secs}ث`;
+  };
+
   const getStatusLabel = (status: TopicStatus) => {
     switch (status) {
-      case 'completed': return 'تم الإنجاز';
+      case 'completed': return 'تم الإكمال';
       case 'in-progress': return 'قيد الدراسة';
       case 'not-started': return 'لم يبدأ';
+      default: return '';
     }
   };
 
-  const getSubjectProgress = (subject: Subject) => {
+  const startTimer = (roundId: string, subjectId: string, topicId: string) => {
+    if (activeTimer) {
+      if (activeTimer.topicId === topicId) return;
+      stopTimer();
+    }
+    setActiveTimer({
+      roundId,
+      subjectId,
+      topicId,
+      startTime: Date.now()
+    });
+  };
+
+  const stopTimer = () => {
+    if (!activeTimer) return;
+
+    const sessionSeconds = Math.floor((Date.now() - activeTimer.startTime) / 1000);
+    
+    setRounds(prevRounds => prevRounds.map(round => {
+      if (round.id !== activeTimer.roundId) return round;
+      return {
+        ...round,
+        subjects: round.subjects.map(sub => {
+          if (sub.id !== activeTimer.subjectId) return sub;
+          return {
+            ...sub,
+            topics: sub.topics.map(topic => {
+              if (topic.id !== activeTimer.topicId) return topic;
+              return { ...topic, studyTime: (topic.studyTime || 0) + sessionSeconds };
+            })
+          };
+        })
+      };
+    }));
+
+    setActiveTimer(null);
+  };
+
+  const getSubjectStudyTime = (subject: Subject) => {
+    return subject.topics.reduce((acc, t) => acc + (t.studyTime || 0), 0);
+  };
+
+  const getTotalStudyTime = () => {
+    let total = 0;
+    rounds.forEach(r => {
+      r.subjects.forEach(s => {
+        s.topics.forEach(t => {
+          total += (t.studyTime || 0);
+        });
+      });
+    });
+    return total;
+  };
+
+  const getSubjectProgress = React.useCallback((subject: Subject) => {
     const total = subject.topics.length;
     const completed = subject.topics.filter(t => t.status === 'completed').length;
     return Math.round((completed / total) * 100);
-  };
+  }, []);
 
   const dynamicWeeks = useMemo(() => {
     // Deep clone to avoid mutating state during calculation
@@ -298,6 +402,44 @@ export default function App() {
     return { subject, topic };
   };
 
+  const processedSubjects = useMemo(() => {
+    let result = activeRound.subjects.map(subject => {
+      const filteredTopics = subject.topics.filter(t => {
+        const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                             t.chapter.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      });
+
+      const sortedTopics = [...filteredTopics];
+      if (sortBy === 'name') {
+        sortedTopics.sort((a, b) => a.name.localeCompare(b.name));
+      } else if (sortBy === 'chapter') {
+        sortedTopics.sort((a, b) => a.chapter.localeCompare(b.chapter));
+      }
+      
+      return { ...subject, topics: sortedTopics };
+    }).filter(subject => subject.topics.length > 0);
+
+    if (sortBy === 'name') {
+      result.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === 'progress') {
+      result.sort((a, b) => {
+        const progressA = getSubjectProgress(activeRound.subjects.find(s => s.id === a.id)!);
+        const progressB = getSubjectProgress(activeRound.subjects.find(s => s.id === b.id)!);
+        return progressB - progressA;
+      });
+    } else if (sortBy === 'chapter') {
+      result.sort((a, b) => {
+        const firstChapterA = a.topics[0]?.chapter || '';
+        const firstChapterB = b.topics[0]?.chapter || '';
+        return firstChapterA.localeCompare(firstChapterB);
+      });
+    }
+
+    return result;
+  }, [activeRound, searchQuery, statusFilter, sortBy, getSubjectProgress]);
+
   return (
     <div className="min-h-screen bg-slate-50 pb-12 font-sans selection:bg-gold/30">
       {/* Motivation Toast */}
@@ -307,10 +449,50 @@ export default function App() {
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-navy text-gold px-6 py-3 rounded-full shadow-2xl border-2 border-gold flex items-center gap-3"
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-navy text-gold px-6 py-3 rounded-full shadow-2xl border-2 border-gold flex items-center gap-3"
           >
             <Sparkles className="w-5 h-5" />
             <span className="font-bold text-lg">{motivation}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Active Timer Bar */}
+      <AnimatePresence>
+        {activeTimer && (
+          <motion.div
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            exit={{ y: 100 }}
+            className="fixed bottom-0 left-0 right-0 z-50 bg-navy text-white p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.2)] border-t border-gold/30"
+          >
+            <div className="max-w-2xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-gold/20 rounded-full flex items-center justify-center">
+                  <Timer className="w-6 h-6 text-gold animate-pulse" />
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-bold text-gold/60 uppercase tracking-wider">قيد الدراسة الآن</p>
+                  <p className="font-bold text-sm truncate max-w-[150px]">
+                    {rounds.find(r => r.id === activeTimer.roundId)?.subjects.find(s => s.id === activeTimer.subjectId)?.topics.find(t => t.id === activeTimer.topicId)?.name}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-6">
+                <div className="text-center">
+                  <p className="text-[10px] font-bold text-gold/60 uppercase tracking-wider">الوقت المنقضي</p>
+                  <p className="text-xl font-black font-mono text-gold">{formatTime(elapsedSeconds)}</p>
+                </div>
+                <button
+                  onClick={stopTimer}
+                  className="bg-rose-500 hover:bg-rose-600 text-white p-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-2 font-bold text-sm"
+                >
+                  <Pause className="w-5 h-5 fill-current" />
+                  إيقاف
+                </button>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -416,15 +598,41 @@ export default function App() {
                       <p className={`font-bold text-sm ${task.completed ? 'text-emerald-900 line-through' : 'text-navy'}`}>
                         {task.topicName}
                       </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <div className="flex items-center gap-1 text-slate-400">
+                          <History className="w-3 h-3" />
+                          <span className="text-[10px] font-bold">
+                            {formatTime(rounds.find(r => r.id === task.roundId)?.subjects.find(s => s.id === task.subjectId)?.topics.find(t => t.id === task.topicId)?.studyTime || 0)}
+                          </span>
+                        </div>
+                        {activeTimer?.topicId === task.topicId && (
+                          <span className="text-[10px] font-black text-emerald-500 animate-pulse">
+                            • جاري التسجيل...
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <button 
-                      onClick={() => removeDailyTask(task.id)}
-                      className="text-slate-300 hover:text-rose-500 transition-colors p-2"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => activeTimer?.topicId === task.topicId ? stopTimer() : startTimer(task.roundId, task.subjectId, task.topicId)}
+                        className={`p-2 rounded-lg transition-all active:scale-95 ${
+                          activeTimer?.topicId === task.topicId 
+                            ? 'bg-rose-50 text-rose-500 border border-rose-100' 
+                            : 'text-slate-300 hover:text-gold hover:bg-gold/5'
+                        }`}
+                        title={activeTimer?.topicId === task.topicId ? "إيقاف المؤقت" : "بدء الدراسة"}
+                      >
+                        {activeTimer?.topicId === task.topicId ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
+                      </button>
+                      <button 
+                        onClick={() => removeDailyTask(task.id)}
+                        className="text-slate-300 hover:text-rose-500 transition-colors p-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -490,17 +698,38 @@ export default function App() {
                             <p className="font-bold text-sm text-navy">
                               {topic.name}
                             </p>
-                            <p className="text-[10px] text-slate-400 mt-0.5">
-                              {topic.chapter}
-                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <div className="flex items-center gap-1 text-slate-400">
+                                <History className="w-3 h-3" />
+                                <span className="text-[10px] font-bold">{formatTime(topic.studyTime || 0)}</span>
+                              </div>
+                              {activeTimer?.topicId === topic.id && (
+                                <span className="text-[10px] font-black text-emerald-500 animate-pulse">
+                                  • جاري التسجيل...
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <button
-                            onClick={() => addToDailyTasks(item.roundId, item.subjectId, item.topicId)}
-                            className="p-2 text-slate-300 hover:text-emerald-500 transition-colors"
-                            title="إضافة للمهام اليومية"
-                          >
-                            <CheckSquare className="w-5 h-5" />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => activeTimer?.topicId === topic.id ? stopTimer() : startTimer(item.roundId, item.subjectId, item.topicId)}
+                              className={`p-2 rounded-lg transition-all active:scale-95 ${
+                                activeTimer?.topicId === topic.id 
+                                  ? 'bg-rose-50 text-rose-500 border border-rose-100' 
+                                  : 'text-slate-300 hover:text-gold hover:bg-gold/5'
+                              }`}
+                              title={activeTimer?.topicId === topic.id ? "إيقاف المؤقت" : "بدء الدراسة"}
+                            >
+                              {activeTimer?.topicId === topic.id ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
+                            </button>
+                            <button
+                              onClick={() => addToDailyTasks(item.roundId, item.subjectId, item.topicId)}
+                              className="p-2 text-slate-300 hover:text-emerald-500 transition-colors"
+                              title="إضافة للمهام اليومية"
+                            >
+                              <CheckSquare className="w-5 h-5" />
+                            </button>
+                          </div>
                         </div>
                       );
                     })}
@@ -553,21 +782,26 @@ export default function App() {
             </motion.div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
                 <CheckCircle2 className="w-5 h-5 text-emerald-500 mb-2" />
-                <span className="text-xs text-slate-500 font-bold mb-1">المنجز</span>
-                <span className="text-xl font-black text-navy">{stats.completedTopics} / {stats.totalTopics}</span>
+                <span className="text-[10px] text-slate-500 font-bold mb-1">المنجز</span>
+                <span className="text-lg font-black text-navy">{stats.completedTopics} / {stats.totalTopics}</span>
               </div>
               <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
                 <Trophy className="w-5 h-5 text-gold mb-2" />
-                <span className="text-xs text-slate-500 font-bold mb-1">النسبة</span>
-                <span className="text-xl font-black text-navy">{stats.percentage}%</span>
+                <span className="text-[10px] text-slate-500 font-bold mb-1">النسبة</span>
+                <span className="text-lg font-black text-navy">{stats.percentage}%</span>
               </div>
               <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
                 <Clock className="w-5 h-5 text-rose-500 mb-2" />
-                <span className="text-xs text-slate-500 font-bold mb-1">المتبقي</span>
-                <span className="text-xl font-black text-navy">{stats.remaining}</span>
+                <span className="text-[10px] text-slate-500 font-bold mb-1">المتبقي</span>
+                <span className="text-lg font-black text-navy">{stats.remaining}</span>
+              </div>
+              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
+                <History className="w-5 h-5 text-blue-500 mb-2" />
+                <span className="text-[10px] text-slate-500 font-bold mb-1">وقت الدراسة</span>
+                <span className="text-lg font-black text-navy">{formatTime(getTotalStudyTime())}</span>
               </div>
             </div>
 
@@ -587,15 +821,59 @@ export default function App() {
               </div>
             </div>
 
+            {/* Filter & Sort Controls */}
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap gap-2">
+                <div className="flex-1 min-w-[140px] relative">
+                  <Filter className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    className="w-full bg-white border border-slate-200 rounded-xl pr-9 pl-3 py-2 text-xs font-bold text-navy focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold appearance-none transition-all"
+                  >
+                    <option value="all">كل الحالات</option>
+                    <option value="completed">تم الإنجاز</option>
+                    <option value="in-progress">قيد الدراسة</option>
+                    <option value="not-started">لم يبدأ</option>
+                  </select>
+                </div>
+                <div className="flex-1 min-w-[140px] relative">
+                  <ArrowUpDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="w-full bg-white border border-slate-200 rounded-xl pr-9 pl-3 py-2 text-xs font-bold text-navy focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold appearance-none transition-all"
+                  >
+                    <option value="default">الترتيب الافتراضي</option>
+                    <option value="name">الاسم</option>
+                    <option value="progress">نسبة الإنجاز</option>
+                    <option value="chapter">الفصل</option>
+                  </select>
+                </div>
+              </div>
+
+              {(searchQuery || statusFilter !== 'all' || sortBy !== 'default') && (
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                      setSortBy('default');
+                    }}
+                    className="text-[10px] font-bold text-rose-500 hover:text-rose-600 transition-colors flex items-center gap-1 bg-rose-50 px-3 py-1 rounded-full border border-rose-100"
+                  >
+                    <X className="w-3 h-3" />
+                    تفريغ الفلاتر
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* Subjects List */}
             <div className="space-y-4">
-              {activeRound.subjects.map((subject) => {
-                const filteredTopics = subject.topics.filter(t => 
-                  t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                  t.chapter.toLowerCase().includes(searchQuery.toLowerCase())
-                );
-
-                if (searchQuery && filteredTopics.length === 0) return null;
+              {processedSubjects.map((subject) => {
+                const originalSubject = activeRound.subjects.find(s => s.id === subject.id)!;
+                const subjectProgress = getSubjectProgress(originalSubject);
 
                 return (
                   <div key={subject.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -609,25 +887,29 @@ export default function App() {
                         </div>
                         <div className="flex-1 text-right">
                           <h3 className="font-bold text-navy text-lg">{subject.name}</h3>
-                          <div className="flex items-center gap-3 mt-1">
+                          <div className="flex items-center gap-4 mt-1">
                             <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                               <motion.div 
                                 initial={{ width: 0 }}
-                                animate={{ width: `${getSubjectProgress(subject)}%` }}
+                                animate={{ width: `${subjectProgress}%` }}
                                 className="h-full bg-gold"
                               />
                             </div>
-                            <span className="text-xs font-bold text-slate-500">{getSubjectProgress(subject)}%</span>
+                            <span className="text-xs font-bold text-slate-500">{subjectProgress}%</span>
+                            <div className="flex items-center gap-1 text-slate-400">
+                              <History className="w-3 h-3" />
+                              <span className="text-[10px] font-bold">{formatTime(getSubjectStudyTime(originalSubject))}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
                       <div className="mr-4 text-slate-400">
-                        {(expandedSubjects[subject.id] || searchQuery) ? <ChevronUp /> : <ChevronDown />}
+                        {(expandedSubjects[subject.id] || searchQuery || statusFilter !== 'all') ? <ChevronUp /> : <ChevronDown />}
                       </div>
                     </button>
 
                     <AnimatePresence>
-                      {(expandedSubjects[subject.id] || searchQuery) && (
+                      {(expandedSubjects[subject.id] || searchQuery || statusFilter !== 'all') && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
@@ -636,16 +918,19 @@ export default function App() {
                         >
                           <div className="p-4 space-y-6">
                             {Object.entries(
-                              filteredTopics.reduce((acc, topic) => {
+                              subject.topics.reduce((acc, topic) => {
                                 if (!acc[topic.chapter]) acc[topic.chapter] = [];
                                 acc[topic.chapter].push(topic);
                                 return acc;
                               }, {} as Record<string, Topic[]>)
                             ).map(([chapter, chapterTopics]) => {
                               const topics = chapterTopics as Topic[];
-                              const isChapterExpanded = expandedChapters[chapter] || searchQuery;
-                              const chapterCompleted = topics.every(t => t.status === 'completed');
-                              const chapterProgress = Math.round((topics.filter(t => t.status === 'completed').length / topics.length) * 100);
+                              const isChapterExpanded = expandedChapters[chapter] || searchQuery || statusFilter !== 'all';
+                              
+                              // Calculate progress based on original topics in this chapter
+                              const originalChapterTopics = originalSubject.topics.filter(t => t.chapter === chapter);
+                              const chapterCompleted = originalChapterTopics.every(t => t.status === 'completed');
+                              const chapterProgress = Math.round((originalChapterTopics.filter(t => t.status === 'completed').length / originalChapterTopics.length) * 100);
 
                               return (
                                 <div key={chapter} className="space-y-3 bg-white/50 p-3 rounded-2xl border border-slate-100 shadow-sm">
@@ -687,8 +972,30 @@ export default function App() {
                                                 <span className="font-bold text-navy text-sm">
                                                   {topic.name}
                                                 </span>
+                                                <div className="flex items-center gap-2 mt-0.5">
+                                                  <div className="flex items-center gap-1 text-slate-400">
+                                                    <History className="w-3 h-3" />
+                                                    <span className="text-[10px] font-bold">{formatTime(topic.studyTime || 0)}</span>
+                                                  </div>
+                                                  {activeTimer?.topicId === topic.id && (
+                                                    <span className="text-[10px] font-black text-emerald-500 animate-pulse">
+                                                      • جاري التسجيل...
+                                                    </span>
+                                                  )}
+                                                </div>
                                               </div>
                                               <div className="flex items-center gap-2">
+                                                <button
+                                                  onClick={() => activeTimer?.topicId === topic.id ? stopTimer() : startTimer(activeRound.id, subject.id, topic.id)}
+                                                  className={`p-2 rounded-lg transition-all active:scale-95 ${
+                                                    activeTimer?.topicId === topic.id 
+                                                      ? 'bg-rose-50 text-rose-500 border border-rose-100' 
+                                                      : 'text-slate-300 hover:text-gold hover:bg-gold/5'
+                                                  }`}
+                                                  title={activeTimer?.topicId === topic.id ? "إيقاف المؤقت" : "بدء الدراسة"}
+                                                >
+                                                  {activeTimer?.topicId === topic.id ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
+                                                </button>
                                                 <button
                                                   onClick={() => addToDailyTasks(activeRound.id, subject.id, topic.id)}
                                                   className="p-2 text-slate-300 hover:text-emerald-500 transition-colors"
