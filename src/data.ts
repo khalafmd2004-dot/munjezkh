@@ -4,8 +4,8 @@ export const INITIAL_DATA: Round[] = [
   {
     id: 'first',
     name: 'الدور الأول',
-    daysLeft: 50,
-    plan: `خطة الدور الأول (50 يوم):
+    daysLeft: 60,
+    plan: `خطة الدور الأول (تنتهي في 13 يونيو):
 - التركيز المكثف على الأحياء، الإنجليزي، الإسلامية، والفيزياء.
 - مراجعة شاملة لكل فصل فور إكماله.
 - حل الأسئلة الوزارية للسنوات العشر الأخيرة.`,
@@ -331,125 +331,97 @@ export const INITIAL_DATA: Round[] = [
 export const WEEKLY_PLAN: Week[] = [
   {
     id: 1,
-    title: 'الأسبوع الأول: انطلاقة قوية',
+    title: 'الأسبوع 1 (14/4 - 20/4): انطلاقة قوية',
     items: [
       { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-1' },
+      { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-2' },
       { roundId: 'first', subjectId: 'eng', topicId: 'eng-1-1' },
+      { roundId: 'first', subjectId: 'eng', topicId: 'eng-1-2' },
       { roundId: 'first', subjectId: 'isl', topicId: 'isl-t-1' },
+      { roundId: 'first', subjectId: 'isl', topicId: 'isl-1-1' },
     ],
   },
   {
     id: 2,
-    title: 'الأسبوع الثاني: تعميق الفهم',
-    items: [
-      { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-2' },
-      { roundId: 'first', subjectId: 'eng', topicId: 'eng-1-2' },
-      { roundId: 'first', subjectId: 'isl', topicId: 'isl-1-1' },
-    ],
-  },
-  {
-    id: 3,
-    title: 'الأسبوع الثالث: الاستمرارية',
+    title: 'الأسبوع 2 (21/4 - 27/4): تعميق الفهم',
     items: [
       { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-3' },
+      { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-4' },
       { roundId: 'first', subjectId: 'eng', topicId: 'eng-1-3' },
+      { roundId: 'first', subjectId: 'eng', topicId: 'eng-1-4' },
       { roundId: 'first', subjectId: 'isl', topicId: 'isl-2-1' },
+      { roundId: 'first', subjectId: 'isl', topicId: 'isl-3-1' },
       { roundId: 'first', subjectId: 'phys', topicId: 'phys-1-1' },
     ],
   },
   {
-    id: 4,
-    title: 'الأسبوع الرابع: التركيز العالي',
-    items: [
-      { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-4' },
-      { roundId: 'first', subjectId: 'eng', topicId: 'eng-1-4' },
-      { roundId: 'first', subjectId: 'isl', topicId: 'isl-3-1' },
-    ],
-  },
-  {
-    id: 5,
-    title: 'الأسبوع الخامس: منتصف الطريق',
+    id: 3,
+    title: 'الأسبوع 3 (28/4 - 4/5): الاستمرارية',
     items: [
       { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-5' },
+      { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-6' },
       { roundId: 'first', subjectId: 'eng', topicId: 'eng-1-5' },
+      { roundId: 'first', subjectId: 'eng', topicId: 'eng-2-1' },
       { roundId: 'first', subjectId: 'isl', topicId: 'isl-4-1' },
     ],
   },
   {
-    id: 6,
-    title: 'الأسبوع السادس: الثبات',
-    items: [
-      { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-6' },
-      { roundId: 'first', subjectId: 'eng', topicId: 'eng-2-1' },
-    ],
-  },
-  {
-    id: 7,
-    title: 'الأسبوع السابع: التحدي',
+    id: 4,
+    title: 'الأسبوع 4 (5/5 - 11/5): التركيز العالي',
     items: [
       { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-7' },
+      { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-8' },
       { roundId: 'first', subjectId: 'eng', topicId: 'eng-2-2' },
+      { roundId: 'first', subjectId: 'eng', topicId: 'eng-2-3' },
       { roundId: 'first', subjectId: 'isl', topicId: 'isl-t-1' },
+      { roundId: 'first', subjectId: 'isl', topicId: 'isl-1-1' },
       { roundId: 'first', subjectId: 'phys', topicId: 'phys-1-2' },
     ],
   },
   {
-    id: 8,
-    title: 'الأسبوع الثامن: اللمسات الأخيرة',
-    items: [
-      { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-8' },
-      { roundId: 'first', subjectId: 'eng', topicId: 'eng-2-3' },
-      { roundId: 'first', subjectId: 'isl', topicId: 'isl-1-1' },
-    ],
-  },
-  {
-    id: 9,
-    title: 'الأسبوع التاسع: المراجعة الذهبية',
+    id: 5,
+    title: 'الأسبوع 5 (12/5 - 18/5): منتصف الطريق',
     items: [
       { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-9' },
-      { roundId: 'first', subjectId: 'eng', topicId: 'eng-3-2' },
-      { roundId: 'first', subjectId: 'isl', topicId: 'isl-2-1' },
-    ],
-  },
-  {
-    id: 10,
-    title: 'الأسبوع العاشر: أسبوع الحسم',
-    items: [
       { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-10' },
+      { roundId: 'first', subjectId: 'eng', topicId: 'eng-3-2' },
       { roundId: 'first', subjectId: 'eng', topicId: 'eng-lit-1' },
+      { roundId: 'first', subjectId: 'isl', topicId: 'isl-2-1' },
       { roundId: 'first', subjectId: 'isl', topicId: 'isl-3-1' },
     ],
   },
   {
-    id: 11,
-    title: 'الأسبوع الحادي عشر: المراجعة المكثفة',
+    id: 6,
+    title: 'الأسبوع 6 (19/5 - 25/5): الثبات',
     items: [
       { roundId: 'first', subjectId: 'bio', topicId: 'bio-2-1' },
+      { roundId: 'first', subjectId: 'bio', topicId: 'bio-2-2' },
       { roundId: 'first', subjectId: 'eng', topicId: 'eng-5-1' },
+      { roundId: 'first', subjectId: 'eng', topicId: 'eng-6-1' },
       { roundId: 'first', subjectId: 'phys', topicId: 'phys-2-1' },
     ],
   },
   {
-    id: 12,
-    title: 'الأسبوع الثاني عشر: السيطرة التامة',
-    items: [
-      { roundId: 'first', subjectId: 'bio', topicId: 'bio-2-2' },
-      { roundId: 'first', subjectId: 'eng', topicId: 'eng-6-1' },
-    ],
-  },
-  {
-    id: 13,
-    title: 'الأسبوع الثالث عشر: قبل الأخير',
+    id: 7,
+    title: 'الأسبوع 7 (26/5 - 1/6): التحدي',
     items: [
       { roundId: 'first', subjectId: 'bio', topicId: 'bio-3-1' },
       { roundId: 'first', subjectId: 'phys', topicId: 'phys-3-1' },
     ],
   },
   {
-    id: 14,
-    title: 'الأسبوع الرابع عشر: أسبوع المراجعة النهائية',
+    id: 8,
+    title: 'الأسبوع 8 (2/6 - 8/6): اللمسات الأخيرة',
     items: [
       { roundId: 'first', subjectId: 'eng', topicId: 'eng-lit-2' },
+    ],
+  },
+  {
+    id: 9,
+    title: 'الأسبوع 9 (9/6 - 13/6): المراجعة النهائية',
+    items: [
+      { roundId: 'first', subjectId: 'bio', topicId: 'bio-1-33' },
+      { roundId: 'first', subjectId: 'phys', topicId: 'phys-1-8' },
     ],
   },
 ];
