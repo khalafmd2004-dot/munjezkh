@@ -26,7 +26,10 @@ import {
   Play,
   Pause,
   Timer,
-  History
+  History,
+  Search,
+  Check,
+  Trash2
 } from 'lucide-react';
 import { INITIAL_DATA, MOTIVATIONAL_MESSAGES } from './data';
 import { Round, TopicStatus, Subject, Topic, Week, DailyTask } from './types';
@@ -121,9 +124,22 @@ export default function App() {
     }
   };
 
-  const activeRound = useMemo(() => 
-    rounds.find(r => r.id === activeTab) || rounds[0], [rounds, activeTab]
-  );
+  const activeRound = useMemo(() => {
+    const round = rounds.find(r => r.id === activeTab) || rounds[0];
+    
+    // Calculate days left dynamically to June 13, 2026
+    const targetDate = new Date('2026-06-13T00:00:00');
+    const now = new Date();
+    
+    // Calculate difference in days
+    const diffTime = targetDate.getTime() - now.getTime();
+    const dynamicDaysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+    
+    return {
+      ...round,
+      daysLeft: dynamicDaysLeft
+    };
+  }, [rounds, activeTab]);
 
   const stats = useMemo(() => {
     let totalTopics = 0;
@@ -231,7 +247,8 @@ export default function App() {
     };
 
     setDailyTasks(prev => [newTask, ...prev]);
-    setActiveTab('daily');
+    // Removed setActiveTab('daily') to prevent unwanted navigation
+    showMotivation(); // Show a small motivation toast instead of switching tabs
   };
 
   const toggleDailyTask = (taskId: string) => {
@@ -464,16 +481,16 @@ export default function App() {
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-navy text-white p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.2)] border-t border-gold/30"
+            className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-6"
           >
-            <div className="max-w-2xl mx-auto flex items-center justify-between">
+            <div className="max-w-2xl mx-auto glass-card rounded-3xl p-5 border-2 border-gold/30 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-gold/20 rounded-full flex items-center justify-center">
-                  <Timer className="w-6 h-6 text-gold animate-pulse" />
+                <div className="w-12 h-12 bg-navy rounded-2xl flex items-center justify-center shadow-lg border border-gold/20">
+                  <Timer className="w-7 h-7 text-gold animate-pulse" />
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-bold text-gold/60 uppercase tracking-wider">قيد الدراسة الآن</p>
-                  <p className="font-bold text-sm truncate max-w-[150px]">
+                  <p className="text-[10px] font-black text-gold uppercase tracking-[0.2em]">جاري التركيز الآن</p>
+                  <p className="font-black text-navy text-sm truncate max-w-[150px] font-display">
                     {rounds.find(r => r.id === activeTimer.roundId)?.subjects.find(s => s.id === activeTimer.subjectId)?.topics.find(t => t.id === activeTimer.topicId)?.name}
                   </p>
                 </div>
@@ -481,12 +498,12 @@ export default function App() {
               
               <div className="flex items-center gap-6">
                 <div className="text-center">
-                  <p className="text-[10px] font-bold text-gold/60 uppercase tracking-wider">الوقت المنقضي</p>
-                  <p className="text-xl font-black font-mono text-gold">{formatTime(elapsedSeconds)}</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">الوقت المنقضي</p>
+                  <p className="text-2xl font-black font-mono text-navy tracking-tighter">{formatTime(elapsedSeconds)}</p>
                 </div>
                 <button
                   onClick={stopTimer}
-                  className="bg-rose-500 hover:bg-rose-600 text-white p-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-2 font-bold text-sm"
+                  className="bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-2xl shadow-xl shadow-rose-500/20 transition-all active:scale-95 flex items-center gap-2 font-black text-sm"
                 >
                   <Pause className="w-5 h-5 fill-current" />
                   إيقاف
@@ -498,52 +515,69 @@ export default function App() {
       </AnimatePresence>
 
       {/* Header & Tabs */}
-      <header className="bg-navy text-white pt-8 pb-4 sticky top-0 z-40 shadow-lg">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="flex flex-col gap-6">
+      <header className="bg-navy text-white pt-10 pb-6 sticky top-0 z-40 shadow-2xl border-b border-gold/10">
+        <div className="max-w-2xl mx-auto px-6">
+          <div className="flex flex-col gap-8">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-extrabold flex items-center gap-2">
-                <LayoutDashboard className="text-gold" />
-                مُنجز <span className="text-gold/80 text-sm font-normal">السادس العلمي</span>
-              </h1>
+              <div className="space-y-1">
+                <h1 className="text-3xl font-black tracking-tight flex items-center gap-3 font-display">
+                  <div className="bg-gold p-2 rounded-xl shadow-[0_0_20px_rgba(245,200,66,0.3)]">
+                    <LayoutDashboard className="text-navy w-6 h-6" />
+                  </div>
+                  مُنجز
+                </h1>
+                <p className="text-gold/60 text-xs font-bold tracking-widest uppercase mr-12">السادس العلمي • ٢٠٢٦</p>
+              </div>
               <button 
                 onClick={resetProgress}
-                className="text-[10px] font-bold text-white/40 hover:text-rose-400 transition-colors flex items-center gap-1"
+                className="group flex flex-col items-center gap-1 transition-all"
               >
-                تصفير التقدم
+                <div className="p-2 rounded-lg group-hover:bg-rose-500/10 transition-colors">
+                  <History className="w-5 h-5 text-white/20 group-hover:text-rose-400" />
+                </div>
+                <span className="text-[9px] font-black text-white/20 group-hover:text-rose-400 uppercase tracking-tighter">تصفير</span>
               </button>
             </div>
             
-            <div className="bg-white/10 p-1 rounded-xl flex gap-1">
+            <div className="bg-white/5 p-1.5 rounded-2xl flex gap-2 backdrop-blur-sm border border-white/5">
               <button
                 onClick={() => setActiveTab('first')}
-                className={`flex-1 py-2.5 rounded-lg font-bold transition-all text-sm ${
+                className={`flex-1 py-3 rounded-xl font-black transition-all text-sm relative overflow-hidden ${
                   activeTab === 'first' 
-                    ? 'bg-rose-600 text-white shadow-md' 
-                    : 'text-white/60 hover:text-white'
+                    ? 'bg-rose-600 text-white shadow-lg' 
+                    : 'text-white/40 hover:text-white hover:bg-white/5'
                 }`}
               >
+                {activeTab === 'first' && (
+                  <motion.div layoutId="activeTab" className="absolute inset-0 bg-rose-600 -z-10" />
+                )}
                 الدور الأول
               </button>
               <button
                 onClick={() => setActiveTab('daily')}
-                className={`flex-1 py-2.5 rounded-lg font-bold transition-all text-sm flex items-center justify-center gap-2 ${
+                className={`flex-1 py-3 rounded-xl font-black transition-all text-sm flex items-center justify-center gap-2 relative overflow-hidden ${
                   activeTab === 'daily' 
-                    ? 'bg-emerald-600 text-white shadow-md' 
-                    : 'text-white/60 hover:text-white'
+                    ? 'bg-emerald-600 text-white shadow-lg' 
+                    : 'text-white/40 hover:text-white hover:bg-white/5'
                 }`}
               >
+                {activeTab === 'daily' && (
+                  <motion.div layoutId="activeTab" className="absolute inset-0 bg-emerald-600 -z-10" />
+                )}
                 <CheckSquare className="w-4 h-4" />
-                مهامي اليومية
+                المهام اليومية
               </button>
               <button
                 onClick={() => setActiveTab('plan')}
-                className={`flex-1 py-2.5 rounded-lg font-bold transition-all text-sm flex items-center justify-center gap-2 ${
+                className={`flex-1 py-3 rounded-xl font-black transition-all text-sm flex items-center justify-center gap-2 relative overflow-hidden ${
                   activeTab === 'plan' 
-                    ? 'bg-gold text-navy shadow-md' 
-                    : 'text-white/60 hover:text-white'
+                    ? 'bg-gold text-navy shadow-lg' 
+                    : 'text-white/40 hover:text-white hover:bg-white/5'
                 }`}
               >
+                {activeTab === 'plan' && (
+                  <motion.div layoutId="activeTab" className="absolute inset-0 bg-gold -z-10" />
+                )}
                 <ListTodo className="w-4 h-4" />
                 الخطة
               </button>
@@ -556,84 +590,65 @@ export default function App() {
         {activeTab === 'daily' ? (
           /* Daily Tasks Tab */
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-              <h2 className="text-xl font-extrabold text-navy mb-2 flex items-center gap-2">
-                <CheckSquare className="text-emerald-500" />
+            <div className="bento-card bg-gradient-to-br from-emerald-500 to-emerald-700 text-white border-none">
+              <h2 className="text-2xl font-black mb-2 flex items-center gap-3 font-display">
+                <div className="bg-white/20 p-2 rounded-xl">
+                  <CheckSquare className="text-white w-6 h-6" />
+                </div>
                 مهامي لليوم
               </h2>
-              <p className="text-slate-500 text-sm font-medium">
+              <p className="text-white/80 text-sm font-bold">
                 أضف مواضيع من الدور الأول أو الخطة لتركز عليها اليوم.
               </p>
             </div>
 
             {dailyTasks.length === 0 ? (
-              <div className="bg-slate-100 border border-slate-200 p-12 rounded-3xl text-center">
-                <ListTodo className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-slate-500 mb-2">لا توجد مهام مضافة</h3>
-                <p className="text-slate-400 text-sm">اذهب إلى الدور الأول أو الخطة وأضف مواضيعك لليوم.</p>
+              <div className="bg-white border-2 border-dashed border-slate-200 p-16 rounded-3xl text-center">
+                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <ListTodo className="w-10 h-10 text-slate-300" />
+                </div>
+                <h3 className="text-xl font-black text-slate-400 mb-2 font-display">لا توجد مهام مضافة</h3>
+                <p className="text-slate-400 text-sm font-bold">اذهب إلى الدور الأول أو الخطة وأضف مواضيعك لليوم.</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {dailyTasks.map((task) => (
-                  <div 
+                  <motion.div 
+                    layout
                     key={task.id}
-                    className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all group ${
                       task.completed 
                         ? 'bg-emerald-50 border-emerald-100 opacity-75' 
-                        : 'bg-white border-slate-200 hover:border-emerald-300'
+                        : 'bg-white border-slate-100 hover:border-emerald-300 shadow-sm hover:shadow-md'
                     }`}
                   >
                     <button 
                       onClick={() => toggleDailyTask(task.id)}
-                      className={`transition-colors ${task.completed ? 'text-emerald-500' : 'text-slate-300 hover:text-emerald-500'}`}
+                      className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
+                        task.completed 
+                          ? 'bg-emerald-500 border-emerald-500 text-white' 
+                          : 'border-slate-200 text-transparent hover:border-emerald-500'
+                      }`}
                     >
-                      {task.completed ? <CheckCircle2 className="w-7 h-7" /> : <Square className="w-7 h-7" />}
+                      <Check className="w-4 h-4 stroke-[4px]" />
                     </button>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500">
-                          {task.subjectName}
-                        </span>
-                      </div>
-                      <p className={`font-bold text-sm ${task.completed ? 'text-emerald-900 line-through' : 'text-navy'}`}>
+                      <p className={`font-black text-lg ${task.completed ? 'text-emerald-700 line-through opacity-50' : 'text-navy'}`}>
                         {task.topicName}
                       </p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <div className="flex items-center gap-1 text-slate-400">
-                          <History className="w-3 h-3" />
-                          <span className="text-[10px] font-bold">
-                            {formatTime(rounds.find(r => r.id === task.roundId)?.subjects.find(s => s.id === task.subjectId)?.topics.find(t => t.id === task.topicId)?.studyTime || 0)}
-                          </span>
-                        </div>
-                        {activeTimer?.topicId === task.topicId && (
-                          <span className="text-[10px] font-black text-emerald-500 animate-pulse">
-                            • جاري التسجيل...
-                          </span>
-                        )}
-                      </div>
+                      <p className={`text-xs font-bold ${task.completed ? 'text-emerald-600/50' : 'text-slate-400'}`}>
+                        {task.subjectName} • {task.chapterName}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => activeTimer?.topicId === task.topicId ? stopTimer() : startTimer(task.roundId, task.subjectId, task.topicId)}
-                        className={`p-2 rounded-lg transition-all active:scale-95 ${
-                          activeTimer?.topicId === task.topicId 
-                            ? 'bg-rose-50 text-rose-500 border border-rose-100' 
-                            : 'text-slate-300 hover:text-gold hover:bg-gold/5'
-                        }`}
-                        title={activeTimer?.topicId === task.topicId ? "إيقاف المؤقت" : "بدء الدراسة"}
-                      >
-                        {activeTimer?.topicId === task.topicId ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
-                      </button>
-                      <button 
-                        onClick={() => removeDailyTask(task.id)}
-                        className="text-slate-300 hover:text-rose-500 transition-colors p-2"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
+                    <button 
+                      onClick={() => removeDailyTask(task.id)}
+                      className="p-2 text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </motion.div>
                 ))}
               </div>
             )}
@@ -641,6 +656,27 @@ export default function App() {
         ) : activeTab === 'plan' ? (
           /* Weekly Plan Tab */
           <div className="space-y-6">
+            {/* Countdown Banner in Plan Tab too */}
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-6 rounded-2xl text-white shadow-xl relative overflow-hidden bg-gradient-to-br from-gold to-amber-600"
+            >
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2 opacity-90">
+                  <Calendar className="w-4 h-4 text-navy" />
+                  <span className="text-sm font-semibold text-navy">العد التنازلي لـ 13 يونيو</span>
+                </div>
+                <div className="flex items-baseline gap-2 text-navy">
+                  <span className="text-5xl font-black">{activeRound.daysLeft}</span>
+                  <span className="text-xl font-bold">يوم متبقي</span>
+                </div>
+              </div>
+              <div className="absolute -bottom-6 -left-6 opacity-10">
+                <Target className="w-48 h-48 text-navy" />
+              </div>
+            </motion.div>
+
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
               <h2 className="text-xl font-extrabold text-navy mb-2 flex items-center gap-2">
                 <Calendar className="text-gold" />
@@ -652,82 +688,78 @@ export default function App() {
             </div>
 
             {dynamicWeeks.length === 0 ? (
-              <div className="bg-emerald-50 border border-emerald-100 p-12 rounded-3xl text-center">
-                <Trophy className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
-                <h3 className="text-2xl font-black text-emerald-900 mb-2">أحسنت يا بطل!</h3>
-                <p className="text-emerald-700 font-medium">لقد أكملت جميع المواضيع في خطتك الدراسية.</p>
+              <div className="bg-emerald-50 border-2 border-dashed border-emerald-200 p-16 rounded-3xl text-center">
+                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                  <Trophy className="w-10 h-10 text-emerald-500" />
+                </div>
+                <h3 className="text-2xl font-black text-emerald-900 mb-2 font-display">أحسنت يا بطل!</h3>
+                <p className="text-emerald-700 font-bold">لقد أكملت جميع المواضيع في خطتك الدراسية.</p>
               </div>
             ) : (
               dynamicWeeks.map((week) => (
-                <div key={week.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                  <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                    <h3 className="font-extrabold text-navy">{week.title}</h3>
-                    {week.id === 1 && (
-                      <span className="bg-gold/20 text-navy text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-wider">
-                        قيد التنفيذ
-                      </span>
-                    )}
+                <div key={week.id} className="bento-card !p-0 overflow-hidden border-2 border-slate-100">
+                  <div className="bg-slate-50/80 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-black text-navy font-display">{week.title}</h3>
+                      {week.id === 1 && (
+                        <span className="bg-gold text-navy text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shadow-sm">
+                          قيد التنفيذ
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-black bg-white px-3 py-1 rounded-full border border-slate-200 text-slate-500 uppercase tracking-widest">
+                      {week.items.length} مهام
+                    </span>
                   </div>
-                  <div className="p-4 space-y-3">
+                  <div className="divide-y divide-slate-100">
                     {week.items.map((item, idx) => {
                       const { subject, topic } = getTopicInfo(item.roundId, item.subjectId, item.topicId);
                       if (!topic || !subject) return null;
-                      
+
                       return (
                         <div 
-                          key={idx}
-                          className="flex items-center gap-4 p-4 rounded-xl border bg-white border-slate-100 hover:border-gold/30 transition-all"
+                          key={`${item.topicId}-${idx}`}
+                          className="p-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors group"
                         >
-                          <button 
-                            onClick={() => toggleTopicCompletion(item.roundId, item.subjectId, item.topicId)}
-                            className="text-slate-300 hover:text-emerald-500 transition-colors"
-                          >
-                            <Square className="w-6 h-6" />
-                          </button>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500">
-                                {subject.emoji} {subject.name}
-                              </span>
-                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                                item.roundId === 'first' ? 'bg-rose-100 text-rose-600' : 'bg-blue-100 text-blue-600'
-                              }`}>
-                                {item.roundId === 'first' ? 'دور 1' : 'دور 2'}
-                              </span>
+                          <div className="flex items-center gap-4 flex-1 text-right">
+                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-xl shadow-sm border border-slate-100 group-hover:border-gold/30 transition-colors">
+                              {subject.emoji}
                             </div>
-                            <p className="font-bold text-sm text-navy">
-                              {topic.name}
-                            </p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <div className="flex items-center gap-1 text-slate-400">
-                                <History className="w-3 h-3" />
-                                <span className="text-[10px] font-bold">{formatTime(topic.studyTime || 0)}</span>
-                              </div>
-                              {activeTimer?.topicId === topic.id && (
-                                <span className="text-[10px] font-black text-emerald-500 animate-pulse">
-                                  • جاري التسجيل...
+                            <div>
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <p className="font-black text-navy text-sm">{topic.name}</p>
+                                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter ${
+                                  item.roundId === 'first' ? 'bg-rose-100 text-rose-600' : 'bg-blue-100 text-blue-600'
+                                }`}>
+                                  {item.roundId === 'first' ? 'دور 1' : 'دور 2'}
                                 </span>
-                              )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                  {subject.name} • {topic.chapter}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1">
+                          
+                          <div className="flex items-center gap-2">
                             <button
-                              onClick={() => activeTimer?.topicId === topic.id ? stopTimer() : startTimer(item.roundId, item.subjectId, item.topicId)}
-                              className={`p-2 rounded-lg transition-all active:scale-95 ${
+                              onClick={() => activeTimer?.topicId === topic.id ? stopTimer() : startTimer(item.roundId, item.subjectId, topic.id)}
+                              className={`p-2.5 rounded-xl transition-all active:scale-95 shadow-sm ${
                                 activeTimer?.topicId === topic.id 
                                   ? 'bg-rose-50 text-rose-500 border border-rose-100' 
-                                  : 'text-slate-300 hover:text-gold hover:bg-gold/5'
+                                  : 'bg-slate-50 text-slate-400 hover:text-gold hover:bg-gold/10 border border-slate-100'
                               }`}
                               title={activeTimer?.topicId === topic.id ? "إيقاف المؤقت" : "بدء الدراسة"}
                             >
-                              {activeTimer?.topicId === topic.id ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
+                              {activeTimer?.topicId === topic.id ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
                             </button>
                             <button
-                              onClick={() => addToDailyTasks(item.roundId, item.subjectId, item.topicId)}
-                              className="p-2 text-slate-300 hover:text-emerald-500 transition-colors"
+                              onClick={() => addToDailyTasks(item.roundId, item.subjectId, topic.id)}
+                              className="p-2.5 bg-slate-50 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 border border-slate-100 rounded-xl transition-all shadow-sm"
                               title="إضافة للمهام اليومية"
                             >
-                              <CheckSquare className="w-5 h-5" />
+                              <CheckSquare className="w-4 h-4" />
                             </button>
                           </div>
                         </div>
@@ -746,78 +778,93 @@ export default function App() {
               key={activeTab}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className={`p-6 rounded-2xl text-white shadow-xl relative overflow-hidden ${
-                activeTab === 'first' ? 'bg-gradient-to-br from-rose-600 to-rose-800' : 'bg-gradient-to-br from-blue-600 to-blue-800'
+              className={`p-8 rounded-[2rem] text-white shadow-2xl relative overflow-hidden border-none ${
+                activeTab === 'first' 
+                  ? 'bg-gradient-to-br from-rose-600 to-rose-800' 
+                  : 'bg-gradient-to-br from-blue-600 to-blue-800'
               }`}
             >
               <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-2 opacity-90">
-                  <Calendar className="w-4 h-4" />
-                  <span className="text-sm font-semibold">الوقت المتبقي</span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-black">{activeRound.daysLeft}</span>
-                  <span className="text-xl font-bold">{activeTab === 'first' ? 'يوم' : 'يوم تقريباً'}</span>
-                </div>
-                <div className="mt-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-bold text-white/80">التقدم الكلي للدور</span>
-                    <span className="text-xs font-black text-gold">{stats.percentage}%</span>
+                <div className="flex items-center gap-3 mb-4 opacity-90">
+                  <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md">
+                    <Calendar className="w-5 h-5" />
                   </div>
-                  <div className="h-3 bg-white/20 rounded-full overflow-hidden border border-white/10">
+                  <span className="text-sm font-black uppercase tracking-[0.2em]">الوقت المتبقي</span>
+                </div>
+                <div className="flex items-baseline gap-3">
+                  <span className="text-7xl font-black font-display tracking-tighter">{activeRound.daysLeft}</span>
+                  <span className="text-2xl font-black opacity-80">{activeTab === 'first' ? 'يوم' : 'يوم تقريباً'}</span>
+                </div>
+                
+                <div className="mt-8 space-y-3">
+                  <div className="flex justify-between items-end">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-black text-white/60 uppercase tracking-widest block">التقدم الكلي للدور</span>
+                      <span className="text-2xl font-black text-gold font-display">{stats.percentage}%</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] font-black text-white/60 uppercase tracking-widest block">المواضيع المنجزة</span>
+                      <span className="text-lg font-black">{stats.completedTopics} / {stats.totalTopics}</span>
+                    </div>
+                  </div>
+                  <div className="h-4 bg-white/10 rounded-2xl overflow-hidden border border-white/5 p-1 backdrop-blur-sm">
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: `${stats.percentage}%` }}
-                      className="h-full bg-gold shadow-[0_0_15px_rgba(245,200,66,0.5)]"
+                      className="h-full bg-gold rounded-xl shadow-[0_0_20px_rgba(245,200,66,0.6)]"
                     />
                   </div>
                 </div>
-                <p className="mt-4 text-white/90 font-medium leading-relaxed text-sm">
-                  موادك: {activeRound.subjects.map(s => s.name).join(' + ')}
-                </p>
               </div>
-              <div className="absolute -bottom-6 -left-6 opacity-10">
-                <Target className="w-48 h-48" />
+              <div className="absolute -bottom-10 -left-10 opacity-10 rotate-12">
+                <Target className="w-64 h-64" />
               </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full -mr-16 -mt-16" />
             </motion.div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500 mb-2" />
-                <span className="text-[10px] text-slate-500 font-bold mb-1">المنجز</span>
-                <span className="text-lg font-black text-navy">{stats.completedTopics} / {stats.totalTopics}</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="bento-card flex flex-col items-center text-center group">
+                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                </div>
+                <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">المنجز</span>
+                <span className="text-xl font-black text-navy font-display">{stats.completedTopics} / {stats.totalTopics}</span>
               </div>
-              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
-                <Trophy className="w-5 h-5 text-gold mb-2" />
-                <span className="text-[10px] text-slate-500 font-bold mb-1">النسبة</span>
-                <span className="text-lg font-black text-navy">{stats.percentage}%</span>
+              <div className="bento-card flex flex-col items-center text-center group">
+                <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <Trophy className="w-5 h-5 text-gold" />
+                </div>
+                <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">النسبة</span>
+                <span className="text-xl font-black text-navy font-display">{stats.percentage}%</span>
               </div>
-              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
-                <Clock className="w-5 h-5 text-rose-500 mb-2" />
-                <span className="text-[10px] text-slate-500 font-bold mb-1">المتبقي</span>
-                <span className="text-lg font-black text-navy">{stats.remaining}</span>
+              <div className="bento-card flex flex-col items-center text-center group">
+                <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <Clock className="w-5 h-5 text-rose-500" />
+                </div>
+                <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">المتبقي</span>
+                <span className="text-xl font-black text-navy font-display">{stats.remaining}</span>
               </div>
-              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
-                <History className="w-5 h-5 text-blue-500 mb-2" />
-                <span className="text-[10px] text-slate-500 font-bold mb-1">وقت الدراسة</span>
-                <span className="text-lg font-black text-navy">{formatTime(getTotalStudyTime())}</span>
+              <div className="bento-card flex flex-col items-center text-center group">
+                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <History className="w-5 h-5 text-blue-500" />
+                </div>
+                <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">وقت الدراسة</span>
+                <span className="text-xl font-black text-navy font-display">{formatTime(getTotalStudyTime())}</span>
               </div>
             </div>
 
             {/* Search Bar */}
-            <div className="relative">
+            <div className="relative group">
               <input
                 type="text"
                 placeholder="ابحث عن موضوع أو فصل..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-10 py-3 text-sm font-bold text-navy focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold transition-all"
+                className="w-full bg-white border-2 border-slate-100 rounded-2xl px-12 py-4 text-sm font-bold text-navy focus:outline-none focus:ring-4 focus:ring-gold/10 focus:border-gold transition-all shadow-sm group-hover:border-slate-200"
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-gold transition-colors">
+                <Search className="w-5 h-5" />
               </div>
             </div>
 
@@ -870,41 +917,37 @@ export default function App() {
             </div>
 
             {/* Subjects List */}
-            <div className="space-y-4">
+            <div className="space-y-6">
               {processedSubjects.map((subject) => {
                 const originalSubject = activeRound.subjects.find(s => s.id === subject.id)!;
                 const subjectProgress = getSubjectProgress(originalSubject);
 
                 return (
-                  <div key={subject.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                  <div key={subject.id} className="bento-card !p-0 overflow-hidden border-2 border-slate-100">
                     <button 
                       onClick={() => toggleSubject(subject.id)}
-                      className="w-full p-5 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                      className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors text-right"
                     >
-                      <div className="flex items-center gap-4 flex-1">
-                        <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-2xl shadow-inner">
+                      <div className="flex items-center gap-5 flex-1">
+                        <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-3xl shadow-inner border border-slate-200/50">
                           {subject.emoji}
                         </div>
-                        <div className="flex-1 text-right">
-                          <h3 className="font-bold text-navy text-lg">{subject.name}</h3>
-                          <div className="flex items-center gap-4 mt-1">
-                            <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="flex-1">
+                          <h3 className="font-black text-navy text-xl font-display">{subject.name}</h3>
+                          <div className="flex items-center gap-4 mt-2">
+                            <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/30">
                               <motion.div 
                                 initial={{ width: 0 }}
                                 animate={{ width: `${subjectProgress}%` }}
-                                className="h-full bg-gold"
+                                className="h-full bg-gold shadow-[0_0_10px_rgba(245,200,66,0.3)]"
                               />
                             </div>
-                            <span className="text-xs font-bold text-slate-500">{subjectProgress}%</span>
-                            <div className="flex items-center gap-1 text-slate-400">
-                              <History className="w-3 h-3" />
-                              <span className="text-[10px] font-bold">{formatTime(getSubjectStudyTime(originalSubject))}</span>
-                            </div>
+                            <span className="text-xs font-black text-slate-500 font-mono">{subjectProgress}%</span>
                           </div>
                         </div>
                       </div>
-                      <div className="mr-4 text-slate-400">
-                        {(expandedSubjects[subject.id] || searchQuery || statusFilter !== 'all') ? <ChevronUp /> : <ChevronDown />}
+                      <div className="mr-6 text-slate-300 group-hover:text-gold transition-colors">
+                        {(expandedSubjects[subject.id] || searchQuery || statusFilter !== 'all') ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
                       </div>
                     </button>
 
@@ -914,9 +957,9 @@ export default function App() {
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden border-t border-slate-100 bg-slate-50/50"
+                          className="overflow-hidden border-t border-slate-100 bg-slate-50/30"
                         >
-                          <div className="p-4 space-y-6">
+                          <div className="p-5 space-y-8">
                             {Object.entries(
                               subject.topics.reduce((acc, topic) => {
                                 if (!acc[topic.chapter]) acc[topic.chapter] = [];
@@ -927,30 +970,31 @@ export default function App() {
                               const topics = chapterTopics as Topic[];
                               const isChapterExpanded = expandedChapters[chapter] || searchQuery || statusFilter !== 'all';
                               
-                              // Calculate progress based on original topics in this chapter
                               const originalChapterTopics = originalSubject.topics.filter(t => t.chapter === chapter);
                               const chapterCompleted = originalChapterTopics.every(t => t.status === 'completed');
                               const chapterProgress = Math.round((originalChapterTopics.filter(t => t.status === 'completed').length / originalChapterTopics.length) * 100);
 
                               return (
-                                <div key={chapter} className="space-y-3 bg-white/50 p-3 rounded-2xl border border-slate-100 shadow-sm">
+                                <div key={chapter} className="space-y-4">
                                   <button 
                                     onClick={() => toggleChapter(chapter)}
-                                    className="w-full flex items-center justify-between group"
+                                    className="w-full flex items-center justify-between group text-right"
                                   >
-                                    <div className="flex items-center gap-3">
-                                      <div className={`w-1.5 h-6 rounded-full ${chapterCompleted ? 'bg-emerald-500' : 'bg-gold'}`} />
-                                      <div className="text-right">
-                                        <h4 className="text-sm font-black text-navy group-hover:text-gold transition-colors">
+                                    <div className="flex items-center gap-4">
+                                      <div className={`w-2 h-8 rounded-full shadow-sm ${chapterCompleted ? 'bg-emerald-500' : 'bg-gold'}`} />
+                                      <div>
+                                        <h4 className="text-base font-black text-navy group-hover:text-gold transition-colors font-display">
                                           {chapter}
                                         </h4>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                                          {topics.length} موضوع • {chapterProgress}% منجز
-                                        </span>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                            {topics.length} موضوع • {chapterProgress}% منجز
+                                          </span>
+                                        </div>
                                       </div>
                                     </div>
                                     <div className="text-slate-300 group-hover:text-gold transition-colors">
-                                      {isChapterExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                      {isChapterExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                                     </div>
                                   </button>
 
@@ -962,35 +1006,36 @@ export default function App() {
                                         exit={{ height: 0, opacity: 0 }}
                                         className="overflow-hidden"
                                       >
-                                        <div className="space-y-2 pt-2">
+                                        <div className="space-y-3 pt-2 pr-6 border-r-2 border-slate-100 mr-1">
                                           {(topics as Topic[]).map((topic) => (
                                             <div 
                                               key={topic.id}
-                                              className="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between group hover:border-gold/50 transition-all"
+                                              className="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between group hover:border-gold/50 hover:shadow-md transition-all"
                                             >
-                                              <div className="flex-1 ml-4">
-                                                <span className="font-bold text-navy text-sm">
+                                              <div className="flex-1 ml-4 text-right">
+                                                <span className="font-black text-navy text-sm block mb-1">
                                                   {topic.name}
                                                 </span>
-                                                <div className="flex items-center gap-2 mt-0.5">
+                                                <div className="flex items-center gap-3">
                                                   <div className="flex items-center gap-1 text-slate-400">
-                                                    <History className="w-3 h-3" />
-                                                    <span className="text-[10px] font-bold">{formatTime(topic.studyTime || 0)}</span>
+                                                    <History className="w-3.5 h-3.5" />
+                                                    <span className="text-[10px] font-black font-mono">{formatTime(topic.studyTime || 0)}</span>
                                                   </div>
                                                   {activeTimer?.topicId === topic.id && (
-                                                    <span className="text-[10px] font-black text-emerald-500 animate-pulse">
-                                                      • جاري التسجيل...
+                                                    <span className="text-[10px] font-black text-emerald-500 animate-pulse flex items-center gap-1">
+                                                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                      جاري التسجيل...
                                                     </span>
                                                   )}
                                                 </div>
                                               </div>
-                                              <div className="flex items-center gap-2">
+                                              <div className="flex items-center gap-3">
                                                 <button
                                                   onClick={() => activeTimer?.topicId === topic.id ? stopTimer() : startTimer(activeRound.id, subject.id, topic.id)}
-                                                  className={`p-2 rounded-lg transition-all active:scale-95 ${
+                                                  className={`p-2.5 rounded-xl transition-all active:scale-95 shadow-sm ${
                                                     activeTimer?.topicId === topic.id 
                                                       ? 'bg-rose-50 text-rose-500 border border-rose-100' 
-                                                      : 'text-slate-300 hover:text-gold hover:bg-gold/5'
+                                                      : 'bg-slate-50 text-slate-400 hover:text-gold hover:bg-gold/10 border border-slate-100'
                                                   }`}
                                                   title={activeTimer?.topicId === topic.id ? "إيقاف المؤقت" : "بدء الدراسة"}
                                                 >
@@ -998,14 +1043,14 @@ export default function App() {
                                                 </button>
                                                 <button
                                                   onClick={() => addToDailyTasks(activeRound.id, subject.id, topic.id)}
-                                                  className="p-2 text-slate-300 hover:text-emerald-500 transition-colors"
+                                                  className="p-2.5 bg-slate-50 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 border border-slate-100 rounded-xl transition-all shadow-sm"
                                                   title="إضافة للمهام اليومية"
                                                 >
                                                   <CheckSquare className="w-5 h-5" />
                                                 </button>
                                                 <button
                                                   onClick={() => cycleStatus(subject.id, topic.id)}
-                                                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm flex items-center gap-2 min-w-[115px] justify-center border ${
+                                                  className={`px-5 py-2.5 rounded-xl text-[11px] font-black transition-all active:scale-95 shadow-sm flex items-center gap-2 min-w-[125px] justify-center border-2 ${
                                                     topic.status === 'completed' 
                                                       ? 'bg-emerald-500 text-white border-emerald-600' 
                                                       : topic.status === 'in-progress'
@@ -1013,9 +1058,9 @@ export default function App() {
                                                       : 'bg-white text-slate-400 border-slate-200 hover:border-rose-300 hover:text-rose-500'
                                                   }`}
                                                 >
-                                                  {topic.status === 'completed' && <CheckCircle2 className="w-3 h-3" />}
-                                                  {topic.status === 'in-progress' && <AlertCircle className="w-3 h-3" />}
-                                                  {topic.status === 'not-started' && <Square className="w-3 h-3" />}
+                                                  {topic.status === 'completed' && <CheckCircle2 className="w-3.5 h-3.5" />}
+                                                  {topic.status === 'in-progress' && <AlertCircle className="w-3.5 h-3.5" />}
+                                                  {topic.status === 'not-started' && <Square className="w-3.5 h-3.5" />}
                                                   {getStatusLabel(topic.status)}
                                                 </button>
                                               </div>
