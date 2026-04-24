@@ -1,9 +1,8 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
 
 @theme {
-  --font-sans: "Cairo", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
   --color-navy: #0F172A;
   --color-gold: #F5C842;
   --color-gold-dark: #D4A72C;
@@ -11,13 +10,12 @@
 
 body {
   direction: rtl;
-  background-color: #f8fafc;
+  @apply bg-navy text-slate-100 antialiased overflow-x-hidden;
   font-family: var(--font-sans);
-  @apply antialiased text-slate-900;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -25,13 +23,26 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
+  @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+}
+
+.glass {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
 }
 
 .glass-card {
-  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+  @apply bg-white/[0.03] backdrop-blur-md border border-white/[0.08] shadow-xl hover:bg-white/[0.05] transition-all duration-300;
+}
+
+@keyframes pulse-gold {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .bento-card {
-  @apply bg-white rounded-2xl border border-slate-200 p-5 transition-all duration-300 hover:shadow-lg hover:border-gold/30 hover:-translate-y-1;
+  @apply bg-white/5 rounded-2xl border border-white/10 p-5 transition-all duration-300 hover:shadow-lg hover:border-gold/30 hover:-translate-y-1;
 }
