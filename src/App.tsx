@@ -712,6 +712,19 @@ export default function App() {
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    <div className="flex justify-between items-center px-2">
+                      <h3 className="text-sm font-black text-white/40 uppercase tracking-widest">قائمة المهام</h3>
+                      <button 
+                        onClick={() => {
+                          if (window.confirm('هل تريد حذف جميع المهام اليومية؟')) {
+                            setDailyTasks([]);
+                          }
+                        }}
+                        className="text-[10px] font-black text-rose-500 hover:text-rose-600 transition-colors bg-rose-500/10 px-3 py-1 rounded-full uppercase tracking-tighter"
+                      >
+                        حذف الكل
+                      </button>
+                    </div>
                     {dailyTasks.map((task) => (
                       <motion.div 
                         layout key={task.id}
@@ -729,7 +742,7 @@ export default function App() {
                           <p className={`font-black text-lg ${task.completed ? 'text-white/40 line-through' : 'text-white'}`}>{task.topicName}</p>
                           <p className={`text-[10px] font-black uppercase tracking-widest ${task.completed ? 'text-white/20' : 'text-white/40'}`}>{task.subjectName}</p>
                         </div>
-                        <button onClick={() => removeDailyTask(task.id)} className="p-2 text-white/10 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all">
+                        <button onClick={() => removeDailyTask(task.id)} className="p-2 text-white/20 hover:text-rose-500 transition-all">
                           <Trash2 className="w-5 h-5" />
                         </button>
                       </motion.div>
